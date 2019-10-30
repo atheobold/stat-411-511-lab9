@@ -1,98 +1,97 @@
 ---
 title: "Multiple Comparisons with a Plan"
 author: "Your Group's Names Here!"
-date: "10/28/2019"
+date: "Due: November 5, 2019"
 output: html_document
 ---
 
+# White-Nose Syndrome
+
+For this (Halloween) lab we will consider data on white-nose syndrome (WNS). 
+White-nose syndrome (WNS) is a disease that affects hibernating bats and is 
+caused by a fungus, Pseudogymnoascus destructans. Sometimes this fungus looks 
+like a white fuzz on bats’ faces, which is how the disease got its name. The 
+fungus grows in cold, dark and damp places. It attacks the bare skin of bats 
+while they’re hibernating in a relatively inactive state. As it grows, it causes
+changes in bats that make them become active more than usual and burn up fat 
+they need to survive the winter. Bats with white-nose syndrome may do strange 
+things like fly outside in the daytime in the winter. 
+
+White-nose syndrome has killed millions of bats in North America. At some sites,
+90 to 100 percent of bats have died. Several species are affected, with the 
+hardest-hit being the northern long-eared bat, little brown bat, and tricolored
+bat. Other species, like the Virginia big-eared bat, have been found with white
+nose, but they don’t show signs of being sick with white-nose syndrome. There is
+no cure for white-nose syndrome, but scientists from all over the world are 
+working together to study the disease, how it spreads and infects bats and what 
+we can do to control it. 
+
+These data were collected by Ecologists in Indiana, interested in studying the 
+spread of WNS throughout Indiana. WNS is suspected to have infected Indiana
+caves in the winter of 2010-2011, so these researchers plan to use long-term 
+monitoring data to examine changes in a summer population that may be 
+attributable to WNS effects during winter.  
 
 
-# Basics to remember  
+# Data 
 
-What’s most important to keep in mind? That we use p-values to alert us to surprising data results, not to give a final answer on anything. (Or at least that’s what we should be doing). And that results can get flagged as “statistically surprising” with a small p-value for a number of reasons:  
+These researchers collected capture data in central Indiana on 10 repeatedly 
+netted sites consistent across all reproductive periods of the bats. They then 
+used a cokriging model to estimate the probability of WNS infection for their 
+capture data. 
 
-* There was a fluke. Something unusual happened in the data just by chance.  
+```{r, message = FALSE}
+library(tidyverse)
 
-* Something was violated. By this I mean there was a mismatch between what was 
-actually done in the data analysis and what needed to be done for the p-value to
-be a valid indicator. One little-known requirement, for example, is that the 
-data analysis be planned before looking at the data. Another is that all 
-analyses and results be presented, no matter the outcome. Yes, these seem like 
-strange, nit-picky rules, but they’re part of the deal when using p-values. A 
-small p-value might simply be a sign that data analysis rules were broken.  
+wns <- read_csv("data/white_nose_Pettit_Okeefe.csv") 
 
-* There was a real but tiny relationship, so tiny that we shouldn’t really care 
-about it. A large trial can detect a true effect that is too small to matter at 
-all, but a p-value will still flag it as being surprising.  
-
-* There was a relationship that is worth more study. There’s more to be done. 
-Can the result be replicated? Is the effect big enough to matter? How does it 
-relate to other studies?
-
-Or any combination of the above.  
-
-Most of the time we jump to #4 as an explanation for a surprising result. That’s
-because we’re human and we like solid explanations for things. But #2 is the 
-dark horse that we can’t ignore. In fact, many failures to replicate can be 
-traced back to this one. And #1 is always there, more often than we think. 
-
-Remember, meeting someone who shares your birthday is a rare fluke, and yet it 
-happens all the time.
+```
 
 
-# What to Do 
-
-* Report an effect size in whatever form makes sense, but be sure to put it into
-context. Remember, statistical significance alone doesn’t tell us how big or how
-important an effect is.  
-
-* Consider banishing “significant” and “confidence” from your vocabulary when 
-writing for a general audience. Yes, statisticians use these words in their line
-of work. But their precise technical meanings don’t necessarily line up with the
-colloquial. Better to consider these terms to be jargon and treat them like any 
-other specialized technical terms.  
-
-* Take the time to explain why the claimed relationship may be the real deal 
-(explanation #4 above) and not a rare fluke, trifle, or misfire in the bunch of
-statistical requirements (#1, #2, and #3). 
+__1. Load in the data and run the code below to create a summary table of the 
+number of sampling days at each site each year.__ 
+__What do you notice about the measurements for sited D, D1, G, and I?__
 
 
-# What to Avoid 
+```{r}
+wns %>% 
+  group_by(year, Site.Name) %>% 
+  summarize(count = n()) %>% 
+  spread(key = year, value = count, fill = 0)
+```
 
-* Avoid: A p-value of 0.05 means the probability that these results were due to 
-random chance is five percent.
 
-* Avoid: The chance of this result being a false positive is five percent.  
+## Combining Levels into One 
 
-* Avoid: The probability that the researchers’ data validated their hypothesis 
-just by chance is five percent.  
+Sites D and D1 are not different, and neither are sites G and I. But they were 
+coded differently in the data. To combine these levels into one level, we will 
+use the `recode()` function in `dplyr`!  
 
-* Better, but probably not worth it: If only random chance were at work here, 
-and if many technical details about the data collection and analysis are 
-accurate, then results at least as extreme as those found in this study would 
-happen only one time out of 20. (Not very satisfying, is it? I told you.)
+```{r}
 
-# Bottom Line  
-
-For the lay public, statistical significance is more about scientific-community 
-behavior than about the math. Getting a small enough p-value allows researchers
-in our current scientific system to publicize their results with credibility 
-even while allowing for the possibility of error. But most of the useful 
-information for your audience is contained behind the statistical significance. 
-It’s your job as a communicator to pull that forward.
-
-Finally, one way I like to think of statistical significance is relating it to 
-the online system of up votes and down votes for sorting web comments. It can 
-definitely be a useful way to direct our attention by flagging potentially 
-interesting and important information. But by no means should it be the final 
-arbiter of either truth or substance.
-
-- Regina Nuzzo, Ph.D. 
+```
 
 
 
-Science is done by humans within a human constructed culture. How can we expect it not to suffer from many of the same things that creep into other human cultures, processes, institutions, etc. Convincing ourselves that it sits above our faults is in fact one of our faults — and it ultimately it hurts Science, which just spreads the hurt.
 
-Where does Statistics come into this? I see its methods and procedures being used as if they take the human out of Science, as if they add a magic level of objectivity, as if they are not subject to the common faults of humans. 
 
-- Megan Higgs, Ph.D. 
+# Findings 
+
+The little brown bat Myotis lucifugus, the
+Indiana bat M. sodalis, and the tri-colored bat Perimyotis subflavus suffered 12–80% declines; whereas,
+the big brown bat Eptesicus fuscus, the eastern red bat Lasiurus borealis, and the evening bat Nycticeius
+humeralis showed 11.5–50.5% increases. We caught more nonreproductive adult females and
+postlactating females when WNS exposure probabilities were high, suggesting that WNS is influencing
+reproductive success of affected species. We conclude that, in Indiana, WNS is causing species-specific
+declines and may have caused the local extinction of M. lucifugus. Furthermore, WNS-affected species
+appear to be losing pups or forgoing pregnancy. Ongoing long-term monitoring studies, especially those
+focusing on reproductive success, are needed to measure the ultimate impacts of WNS.
+
+
+# References 
+
+Pettit, Joseph L.; O'Keefe, Joy M. (2017), Data from: Impacts of white-nose 
+syndrome observed during long-term monitoring of a midwestern bat community, 
+Dataset, https://doi.org/10.5061/dryad.cf273
+
+

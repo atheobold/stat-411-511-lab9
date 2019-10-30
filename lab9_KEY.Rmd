@@ -1,6 +1,6 @@
 ---
 title: "Multiple Comparisons with a Plan"
-author: "Your Group's Names Here!"
+author: "Solutions"
 date: "Due: November 5, 2019"
 output: html_document
 ---
@@ -72,8 +72,11 @@ __2. Write the code to:__
 * __change `Site.Name` G to I__  
 
 ```{r}
-
-
+wns <- wns %>% 
+  mutate(Site.Name = case_when(Site.Name == "D1" ~ "D", 
+                               Site.Name == "G" ~ "I", 
+                               TRUE ~ Site.Name)
+         )
 ```
 
 
@@ -100,7 +103,8 @@ wns <- wns %>%
                                     "LABO", 
                                     "MYLU", 
                                     "MYSE", 
-                                    "MYSO"))
+                                    "MYSO")
+         )
 ```
 
 
@@ -113,8 +117,10 @@ __Verify, is the order of the species what you specified in the code above?__
 
 
 ```{r}
-
-
+wns %>%  
+  ggplot(aes(x = species, y = bats)) + 
+  geom_violin(aes(fill = species)) + 
+  facet_wrap(~year)
 ```
 
 
@@ -141,8 +147,13 @@ captured per species, using `TukeyHSD`.__
 __Finally, present the results in a tidy table!__  
 
 ```{r}
+library(broom)
 
+bats_aov <- aov(bats ~ Site.Name + species, data = wns)
 
+bats_thsd <- TukeyHSD(bats_aov, "species", ordered = TRUE)
+
+tidy(bats_thsd)
 ```
 
 
@@ -183,8 +194,11 @@ captured per year, using `TukeyHSD`.__
 __Finally, present the results in a tidy table!__  
 
 ```{r}
+year_aov <- aov(bats ~ yearF + species, data = wns)
 
+year_thsd <- TukeyHSD(year_aov, "yearF", ordered = TRUE)
 
+tidy(year_thsd)
 ```
 
 

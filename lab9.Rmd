@@ -65,27 +65,168 @@ wns %>%
 
 Sites D and D1 are not different, and neither are sites G and I. But they were 
 coded differently in the data. To combine these levels into one level, we will 
-use the `recode()` function in `dplyr`!  
+revisit the `case_when()` function in `dplyr`!  
+
+__2. Write the code to:__ 
+* __change `Site.Name` D1 to D__ 
+* __change `Site.Name` G to I__  
 
 ```{r}
+wns <- wns %>% 
+  mutate(Site.Name = case_when(Site.Name == "D1" ~ "D", 
+                               Site.Name == "G" ~ "I", 
+                               TRUE ~ Site.Name)
+         )
+```
 
+
+## Reordering Levels 
+
+As we all know, the default ordering of characters in `R` is alphabetical. 
+However, sometimes we wish to have a specific ordering to our characters (e.g. 
+Monday, Tuesday, Wednesday, etc.). The default ordering for the bat species is 
+not what we would like to use. Instead, we would like the levels to be: 
+
+EPFU, PESU, NYHU, LABO, MYLU, MYSE, MYSO
+
+To reorder variable levels, we will use the `fct_relevel()` function from the 
+`forcats` package. The package `forcats` (the name is an anagram of factors!) is
+included in the `tidyverse`, so we don't need to load in a new package.  
+
+
+```{r}
+wns <- wns %>% 
+  mutate(species_tidy = fct_relevel(species, 
+                                    "EPFU", 
+                                    "PESU", 
+                                    "NYHU", 
+                                    "LABO", 
+                                    "MYLU", 
+                                    "MYSE", 
+                                    "MYSO")
+         )
 ```
 
 
 
+## EDA  
+
+__3. Using `ggplot`, create a visualization of the number of bats captured for  
+each species.__ 
+__Verify, is the order of the species what you specified in the code above?__ 
 
 
-# Findings 
+```{r}
+wns %>%  
+  ggplot(aes(x = species, y = bats)) + 
+  geom_violin(aes(fill = species)) + 
+  facet_wrap(~year)
+```
 
-The little brown bat Myotis lucifugus, the
-Indiana bat M. sodalis, and the tri-colored bat Perimyotis subflavus suffered 12–80% declines; whereas,
-the big brown bat Eptesicus fuscus, the eastern red bat Lasiurus borealis, and the evening bat Nycticeius
-humeralis showed 11.5–50.5% increases. We caught more nonreproductive adult females and
-postlactating females when WNS exposure probabilities were high, suggesting that WNS is influencing
-reproductive success of affected species. We conclude that, in Indiana, WNS is causing species-specific
-declines and may have caused the local extinction of M. lucifugus. Furthermore, WNS-affected species
-appear to be losing pups or forgoing pregnancy. Ongoing long-term monitoring studies, especially those
-focusing on reproductive success, are needed to measure the ultimate impacts of WNS.
+
+### Faceting 
+
+Almost always it is useful to consider **more** than two variables in a data 
+visualization. To add a third variable into our plot, we could make the same 
+plot as above, but produce a subplot for each year. To do this, we use the 
+`facet_wrap()` function in `ggplot2` to add a facet layer to our plot. 
+
+__4. Add a facet to the plot you made above. What new information do you see?__ 
+
+
+
+# Comparisons 
+
+These researchers investigated differences in the number of captures for each 
+species, controlling for the site bats were captured on.  
+
+__5. Fit a two-way ANOVA using `aov` modeling the number of bats captured as 
+a function of the study site and bat species.__ 
+__Next, fit a multiple comparison test for differences in the number of bats 
+captured per species, using `TukeyHSD`.__ 
+__Finally, present the results in a tidy table!__  
+
+```{r}
+library(broom)
+
+bats_aov <- aov(bats ~ Site.Name + species, data = wns)
+
+bats_thsd <- TukeyHSD(bats_aov, "species", ordered = TRUE)
+
+tidy(bats_thsd)
+```
+
+
+__6.__ How many comparisons were made? How many had p-values less than 0.05? How
+many would you expect to have a p-value less than 0.05 due to random chance?__ 
+
+
+
+
+## Changing Data Type 
+
+When we imported the data, `year` variable was stored as a numeric variable, but
+the researchers analyzed these data using `year` as a `factor`. 
+
+To convert a variable from numeric to a character we use `R`'s built-in 
+`as.character()` function. 
+
+```{r}
+wns <- wns %>% 
+  mutate(yearF = as.character(year))
+  
+```
+
+__7. Confirm that `yearF` is considered to be a character data type and not a 
+numeric data type.__  
+
+
+
+# More Comparisons  
+
+Researchers were also interested in investigating the differences in the number
+of captures for each species, controlling for the year were captured in.  
+
+__8. Fit a two-way ANOVA using `aov` modeling the number of bats captured as 
+a function of the year captured and bat species.__ 
+__Next, fit a multiple comparison test for differences in the number of bats 
+captured per year, using `TukeyHSD`.__ 
+__Finally, present the results in a tidy table!__  
+
+```{r}
+year_aov <- aov(bats ~ yearF + species, data = wns)
+
+year_thsd <- TukeyHSD(year_aov, "yearF", ordered = TRUE)
+
+tidy(year_thsd)
+```
+
+
+__9.__ How many comparisons were made? How many had p-values less than 0.05? How
+many would you expect to have a p-value less than 0.05 due to random chance?__ 
+
+
+
+
+# Reporting Findings 
+
+Suppose the report that these researchers produced for the Journal of Fish and 
+Wildlife Management solely reported the following results:  
+
+* Our research found that big brown bat (Eptesicus fuscus) had a significantly 
+lower capture rate than all other species of bats captured. Furthermore, the 
+number of bats captured in 2012 was significantly higher than all other years of
+the study.*  
+
+
+__10. What are some issues with reporting the statistical analysis in this way?__ 
+
+
+
+
+
+__If you are struggling to find issues, the following blog may be helpful:__ 
+https://www.nih.gov/about-nih/what-we-do/science-health-public-trust/perspectives/science-health-public-trust/tips-communicating-statistical-significance
 
 
 # References 
